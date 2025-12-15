@@ -31,7 +31,7 @@ sed -i 's/^# %wheel/%wheel/' /etc/sudoers || true
 # Put your key in build_files/core-authorized_keys
 if [ -f /ctx/ssh-keys/core-authorized_keys ]; then
   mkdir -p "/home/${USER_NAME}/.ssh"
-  cp /ctx/core-authorized_keys "/home/${USER_NAME}/.ssh/authorized_keys"
+  cp /ctx/ssh-keys/core-authorized_keys "/home/${USER_NAME}/.ssh/authorized_keys"
   chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.ssh"
   chmod 700 "/home/${USER_NAME}/.ssh"
   chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
