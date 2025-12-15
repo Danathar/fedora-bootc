@@ -1,24 +1,42 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -ouex pipefail
+# 1) Add tailscale repo
+cp /ctx/tailscale.repo /etc/yum.repos.d/tailscale.repo
 
-### Install packages
+# 2) Packages (your existing BlueBuild logic)
+dnf5 install -y \
+  vim \
+  btop \
+  rpmconf \
+  qemu-guest-agent \
+  cockpit-podman \
+  cockpit-ostree \
+  cockpit-selinux \
+  cockpit-storaged \
+  tailscale
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/39/x86_64/repoview/index.html&protocol=https&redirect=1
+dnf5 remove -y nano
+dnf5 clean all
 
-# this installs a package from fedora repos
-dnf5 install -y tmux 
+# 3) Create login user and add to wheel
+USER_NAME="core"        # change to whatever you want
+useradd -m -s /bin/bash -G wheel "${USER_NAME}" || true
+passwd -l "${USER_NAME}" || true    # lock password, SSH keys only
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+# Optional: ensure wheel has sudo
+sed -i 's/^# %wheel/%wheel/' /etc/sudoers || true
 
-#### Example for enabling a System Unit File
+# 4) (Optional) Install SSH key for that user
+# Put your key in build_files/core-authorized_keys
+if [ -f /ctx/core-authorized_keys ]; then
+  mkdir -p "/home/${USER_NAME}/.ssh"
+  cp /ctx/core-authorized_keys "/home/${USER_NAME}/.ssh/authorized_keys"
+  chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.ssh"
+  chmod 700 "/home/${USER_NAME}/.ssh"
+  chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
+fi
 
-systemctl enable podman.socket
+# 5) Make sure SSHD is running
+systemctl enable sshd.service || true
+
