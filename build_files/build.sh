@@ -22,7 +22,9 @@ dnf5 clean all
 # 3) Create login user and add to wheel
 USER_NAME="core"        # change to whatever you want
 useradd -m -s /bin/bash -G wheel "${USER_NAME}" || true
-passwd -l "${USER_NAME}" || true    # lock password, SSH keys only
+
+# Set an initial password (CHANGE AFTER FIRST LOGIN)
+echo "${USER_NAME}:changeme" | chpasswd || true
 
 # Optional: ensure wheel has sudo
 sed -i 's/^# %wheel/%wheel/' /etc/sudoers || true
@@ -39,4 +41,7 @@ fi
 
 # 5) Make sure SSHD is running
 systemctl enable sshd.service || true
+
+# Enable SSH password authentication
+sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config || true
 
