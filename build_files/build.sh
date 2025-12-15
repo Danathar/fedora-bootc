@@ -29,7 +29,7 @@ sed -i 's/^# %wheel/%wheel/' /etc/sudoers || true
 
 # 4) (Optional) Install SSH key for that user
 # Put your key in build_files/core-authorized_keys
-if [ -f /ctx/core-authorized_keys ]; then
+if [ -f /ctx/ssh-keys/core-authorized_keys ]; then
   mkdir -p "/home/${USER_NAME}/.ssh"
   cp /ctx/core-authorized_keys "/home/${USER_NAME}/.ssh/authorized_keys"
   chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.ssh"

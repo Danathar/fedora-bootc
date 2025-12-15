@@ -1,7 +1,4 @@
-[image]
-source = "ghcr.io/Danathar/fedora-bootc:latest"
-
 [[customizations.filesystem]]
 mountpoint = "/"
 minsize = "40 GiB"
-format = "raw"
+
