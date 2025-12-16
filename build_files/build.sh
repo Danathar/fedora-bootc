@@ -4,7 +4,7 @@ set -euo pipefail
 # 1) Add tailscale repo
 cp /ctx/tailscale.repo /etc/yum.repos.d/tailscale.repo
 
-# 2) Packages (your existing BlueBuild logic)
+# 2) Packages
 dnf5 install -y \
   vim \
   btop \
@@ -19,23 +19,6 @@ dnf5 install -y \
 dnf5 remove -y nano
 dnf5 clean all
 
-# 3) Create login user and add to wheel
-USER_NAME="core"        # change to whatever you want
-useradd -m -s /bin/bash -G wheel "${USER_NAME}" || true
-
-# Optional: ensure wheel has sudo
-sed -i 's/^# %wheel/%wheel/' /etc/sudoers || true
-
-# 4) (Optional) Install SSH key for that user
-# Put your key in build_files/core-authorized_keys
-if [ -f /ctx/ssh-keys/core-authorized_keys ]; then
-  mkdir -p "/home/${USER_NAME}/.ssh"
-  cp /ctx/ssh-keys/core-authorized_keys "/home/${USER_NAME}/.ssh/authorized_keys"
-  chown -R "${USER_NAME}:${USER_NAME}" "/home/${USER_NAME}/.ssh"
-  chmod 700 "/home/${USER_NAME}/.ssh"
-  chmod 600 "/home/${USER_NAME}/.ssh/authorized_keys"
-fi
-
-# 5) Make sure SSHD is running
+# 3) Ensure SSHD is enabled
 systemctl enable sshd.service || true
 
