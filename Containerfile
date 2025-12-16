@@ -1,6 +1,6 @@
 # Stage to hold build scripts and config
 FROM scratch AS ctx
-COPY build_files /   # includes build.sh, tailscale.repo, core-user.conf, core-ssh.conf
+COPY build_files /   
 
 # Base Image
 FROM quay.io/fedora/fedora-bootc
