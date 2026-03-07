@@ -1,4 +1,5 @@
+# The raw/qcow2 path uses this file to size the root filesystem.
+# Treat this as the minimum usable size rather than an exact final size.
 [[customizations.filesystem]]
 mountpoint = "/"
 minsize = "40 GiB"
-
