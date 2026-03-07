@@ -16,11 +16,10 @@ The base image is [`quay.io/fedora/fedora-bootc`](https://quay.io/repository/fed
 - installs `cockpit`, `cockpit-podman`, `cockpit-ostree`, `cockpit-selinux`, and `cockpit-storaged` for browser-based management
 - installs `tailscale`
 - enables `sshd`
-- creates a `core` user with `wheel` access
-- seeds `/home/core/.ssh/authorized_keys` from [`build_files/core-ssh.conf`](./build_files/core-ssh.conf)
+- can optionally create a `core` user with `wheel` access
+- can optionally seed `/home/core/.ssh/authorized_keys` from a build-time public key
 
-> [!WARNING]
-> [`build_files/core-ssh.conf`](./build_files/core-ssh.conf) still contains a placeholder key. Replace it or remove that tmpfiles entry before relying on the baked-in `core` user.
+By default, the image does not include a personal SSH key and does not create the optional `core` user unless you opt in at build time.
 
 ## If You Just Want To Use The Image
 
@@ -45,8 +44,8 @@ This repo is intentionally small. The important files are:
 
 - [`Containerfile`](./Containerfile): chooses the base image and defines the final image layout
 - [`build_files/build.sh`](./build_files/build.sh): installs packages and enables services
-- [`build_files/core-user.conf`](./build_files/core-user.conf): creates the `core` user
-- [`build_files/core-ssh.conf`](./build_files/core-ssh.conf): seeds that user's `authorized_keys`
+- [`build_files/core-user.conf.example`](./build_files/core-user.conf.example): example sysusers file for the optional `core` user
+- [`build_files/core-ssh.conf.example`](./build_files/core-ssh.conf.example): example tmpfiles entry for the optional SSH key
 - [`.github/workflows/build.yml`](./.github/workflows/build.yml): builds the OCI image and pushes it to GHCR
 - [`.github/workflows/build-disk.yml`](./.github/workflows/build-disk.yml): builds disk artifacts such as qcow2 and a generic installer ISO
 - [`Justfile`](./Justfile): local helper commands for building and testing
@@ -55,8 +54,65 @@ If you fork the repo, the usual edit points are:
 
 1. change the base image in [`Containerfile`](./Containerfile) if you want to build from something other than Fedora bootc
 2. change package or service choices in [`build_files/build.sh`](./build_files/build.sh)
-3. replace the placeholder SSH key or remove the baked-in admin-user pattern entirely
+3. decide whether you want the optional `core` user at all, or whether you want a different user-management pattern entirely
 4. adjust metadata in [`.github/workflows/build.yml`](./.github/workflows/build.yml) so GHCR labels describe your image instead of this one
+
+## Optional `core` User And SSH Key Injection
+
+This repo is designed so you can use your own public key without committing it to git.
+
+Build-time controls:
+
+- `CORE_SSH_PUBLIC_KEY=...`: inject a one-line SSH public key into `/home/core/.ssh/authorized_keys`
+- `ENABLE_CORE_USER=true`: create the optional `core` user even if you are not injecting a key
+
+If `CORE_SSH_PUBLIC_KEY` is set, the build automatically enables the `core` user as well.
+
+### Local builds
+
+To build a local image with your SSH key baked in:
+
+```bash
+CORE_SSH_PUBLIC_KEY="$(tr -d '\n' < ~/.ssh/id_ed25519.pub)" \
+just build
+```
+
+If you only want the user without an injected key:
+
+```bash
+ENABLE_CORE_USER=true just build
+```
+
+### GitHub Actions builds
+
+For repo builds on GitHub, use Actions variables rather than editing tracked files. A public key is not secret material, so a repository variable is the right default.
+
+Recommended repository variables:
+
+- `CORE_SSH_PUBLIC_KEY`: your one-line public key
+- `ENABLE_CORE_USER`: optional; only needed if you want the `core` user even when no key is injected
+
+Using the GitHub CLI:
+
+```bash
+gh variable set CORE_SSH_PUBLIC_KEY --body "$(tr -d '\n' < ~/.ssh/id_ed25519.pub)"
+```
+
+Only set `ENABLE_CORE_USER` if you want the `core` user without also injecting a key:
+
+```bash
+gh variable set ENABLE_CORE_USER --body true
+```
+
+Using the GitHub web UI:
+
+1. go to `Settings`
+2. open `Secrets and variables` -> `Actions`
+3. choose `Variables`
+4. add `CORE_SSH_PUBLIC_KEY`
+5. optionally add `ENABLE_CORE_USER` with the value `true` if you want the user even without an injected key
+
+Once those variables are set, the normal build workflow will pass them into the image build. The published container image and any disk images built from it will then include the optional `core` account and key.
 
 ## How GitHub Builds Work
 
@@ -91,6 +147,8 @@ The [`Justfile`](./Justfile) is the local entry point. A few environment variabl
 - `DEFAULT_TAG`: local image tag, defaults to `latest`
 - `BIB_IMAGE`: the bootc-image-builder container image used for local disk builds
 - `ISO_CONFIG`: which installer ISO config file to use, defaults to `disk_config/iso.toml`
+- `ENABLE_CORE_USER`: whether to create the optional `core` user during local builds
+- `CORE_SSH_PUBLIC_KEY`: one-line SSH public key to inject for the optional `core` user
 
 Common commands:
 

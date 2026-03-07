@@ -1,5 +1,6 @@
 # Default values for local builds. Override them with environment variables
-# when testing forks, alternate tags, or your own installer profile.
+# when testing forks, alternate tags, your own installer profile, or optional
+# SSH access settings.
 
 export image_name := env("IMAGE_NAME", "fedora-bootc")
 export default_tag := env("DEFAULT_TAG", "latest")
@@ -87,13 +88,20 @@ sudoif command *args:
     sudoif {{ command }} {{ args }}
 
 # Build the OCI image defined by Containerfile.
+# Set ENABLE_CORE_USER=true and/or CORE_SSH_PUBLIC_KEY in your shell if you want
+# the image to create the optional core account.
 
-# Example: just build fedora-bootc latest
+# Example: CORE_SSH_PUBLIC_KEY="$(tr -d '\n' < ~/.ssh/id_ed25519.pub)" just build
 build target_image=image_name tag=default_tag:
     #!/usr/bin/env bash
     set -euo pipefail
 
+    enable_core_user="${ENABLE_CORE_USER:-false}"
+    core_ssh_public_key="${CORE_SSH_PUBLIC_KEY:-}"
+
     podman build \
+        --build-arg "ENABLE_CORE_USER=${enable_core_user}" \
+        --build-arg "CORE_SSH_PUBLIC_KEY=${core_ssh_public_key}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \
         .

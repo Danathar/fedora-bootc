@@ -88,6 +88,12 @@ jobs:
         with:
           containerfiles: |
             ./Containerfile
+          # Public-key injection is opt-in so forks of this repo do not inherit
+          # a baked-in admin account by default. Repository variables are the
+          # intended way to feed these values in GitHub-hosted builds.
+          build-args: |
+            ENABLE_CORE_USER=${{ vars.ENABLE_CORE_USER || 'false' }}
+            CORE_SSH_PUBLIC_KEY=${{ vars.CORE_SSH_PUBLIC_KEY || '' }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

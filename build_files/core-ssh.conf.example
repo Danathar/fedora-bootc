@@ -1,0 +1,4 @@
+# Example of the tmpfiles snippet generated when CORE_SSH_PUBLIC_KEY is
+# supplied at build time.
+d /home/core/.ssh 700 core core -
+f~ /home/core/.ssh/authorized_keys 600 core core - [ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... your-key-comment]
