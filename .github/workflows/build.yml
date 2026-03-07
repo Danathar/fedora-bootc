@@ -136,7 +136,6 @@ jobs:
             exit 0
           fi
 
-          image_full="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
-          for tag in ${{ steps.metadata.outputs.tags }}; do
-            cosign sign -y --key env://COSIGN_PRIVATE_KEY "${image_full}:${tag}"
-          done
+          image_ref="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}"
+          echo "Signing digest ${image_ref}"
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY "${image_ref}"
