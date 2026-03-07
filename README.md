@@ -5,7 +5,7 @@ Fedora bootc image built directly from a `Containerfile` and published to GHCR w
 This repo keeps the image definition straightforward. The image is defined by [`Containerfile`](./Containerfile), [`build_files/build.sh`](./build_files/build.sh), and the workflows in [`.github/workflows/`](./.github/workflows).
 
 > [!NOTE]
-> This is not an official Fedora, bootc, or Universal Blue image. It is a personal, opinionated image. Review the files in this repo before using it on real systems.
+> This is not an official Fedora, bootc, or Universal Blue image. It is a personal, opinionated image. Some AI assistance was used when adapting the original template into this repo. Review the files in this repo before using it on real systems.
 
 ## Upstream Template
 
