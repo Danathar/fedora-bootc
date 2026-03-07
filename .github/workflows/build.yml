@@ -4,13 +4,21 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
+      - '**/*.adoc'
+      - 'docs/**'
   schedule:
     - cron: '05 10 * * *'  # 10:05am UTC everyday
   push:
     branches:
       - main
     paths-ignore:
-      - '**/README.md'
+      - '**/*.md'
+      - '**/*.rst'
+      - '**/*.adoc'
+      - 'docs/**'
   workflow_dispatch:
 
 env:
