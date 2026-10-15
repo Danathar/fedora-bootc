@@ -80,7 +80,7 @@ jobs:
 
       - name: Build disk artifact
         id: build
-        uses: osbuild/bootc-image-builder-action@v0.0.2
+        uses: osbuild/bootc-image-builder-action@019bb59c5100ecec4e78c9e94e18a840110f7a0b # v0.0.2
         with:
           builder-image: ${{ env.BIB_IMAGE }}
           config-file: ${{ matrix.config-file }}
