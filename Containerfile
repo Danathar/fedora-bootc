@@ -5,7 +5,7 @@ FROM scratch AS ctx
 COPY build_files /
 
 # Stage 2: start from Fedora's bootc base image.
-FROM quay.io/fedora/fedora-bootc
+FROM quay.io/fedora/fedora-bootc@sha256:22a5e3fb9e5587189144ac0ef321e153662580bfb411022f55becdae9141f114
 
 # These build args are intentionally empty/disabled by default so forks of this
 # repo do not inherit a baked-in admin account or SSH key. Local builds and
